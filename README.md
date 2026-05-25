@@ -1,16 +1,99 @@
-# React + Vite
+📸 React Gallery Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, responsive image gallery web application built with React and Tailwind CSS. It fetches images from the Picsum API and provides a smooth user experience with features like search, filtering, favorites, and image preview modal.
 
-Currently, two official plugins are available:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+📌 Features
+🔍 Debounced Search (smooth author search without lag)
+🎯 Author Filter Dropdown
+📸 Image Grid Gallery (responsive layout)
+❤️ Favorites System (Instagram-like)
+💾 LocalStorage Support (favorites persist after refresh)
+🖼️ Image Modal Preview (fullscreen view)
+📦 Dynamic Image Limit Selector (10–50 images)
+📄 Pagination System
+⚡ Optimized rendering with React best practices
+📱 Fully Responsive Design
+🛠️ Tech Stack
+⚛️ React (Hooks)
+🎨 Tailwind CSS
+🌐 Picsum Photos API
+💾 LocalStorage (Browser Storage)
+⚡ JavaScript (ES6+)
+📷 API Used
 
-## React Compiler
+This project uses the Picsum Photos API:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+https://picsum.photos/v2/list
 
-## Expanding the ESLint configuration
+It provides random images with metadata like:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+author
+width
+height
+download URL
+📁 Project Structure
+src/
+│── App.jsx
+│── Navbar.jsx
+│── Content.jsx
+│── ImageModal.jsx
+│── index.css
+⚙️ Installation & Setup
+
+Clone the repository:
+
+git clone https://github.com/your-username/gallery-app.git
+
+Move into the project folder:
+
+cd gallery-app
+
+Install dependencies:
+
+npm install
+
+Run the project:
+
+npm run dev
+📦 Build for Production
+npm run build
+✨ Key Features Explained
+🔍 Debounced Search
+
+Prevents unnecessary API filtering by delaying input handling, improving performance.
+
+❤️ Favorites System
+
+Users can save favorite images which are stored in localStorage.
+
+🖼️ Image Modal
+
+Click any image to view it in a fullscreen popup with details.
+
+🎯 Author Filter
+
+Dropdown menu to filter images by selected author.
+
+📦 Image Limit Control
+
+Users can choose how many images to load (10, 20, 30, 50).
+
+📈 Performance Improvements
+React.memo optimization
+Lazy image loading
+Debounced input handling
+Reduced unnecessary re-renders
+Efficient filtering logic
+🎯 Future Improvements
+Infinite scroll (replace pagination)
+Dark mode support 🌙
+Backend for synced favorites
+Image download button
+Share functionality
+Skeleton loading UI
+👨‍💻 Author
+GitHub: Your Username
+📄 License
+
+This project is open-source and available under the MIT License.
