@@ -115,7 +115,6 @@ const App = () => {
           ))}
         </select>
 
-        {/* 📦 LIMIT SELECT */}
         <select
           className="border p-2 rounded w-40"
           value={limit}
@@ -128,7 +127,6 @@ const App = () => {
         </select>
       </div>
 
-      {/* GRID */}
       <Content
         images={filteredImages}
         favorites={favorites}
@@ -155,7 +153,6 @@ const App = () => {
         </button>
       </div>
 
-      {/* MODAL */}
       {selectedImg && (
         <ImageModal img={selectedImg} onClose={() => setSelectedImg(null)} />
       )}
