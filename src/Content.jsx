@@ -1,28 +1,40 @@
 import React from "react";
 
-const Content = ({ arr }) => {
-  return (
-    <div className="m-5">
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {arr.map((d, i) => (
-          <div
-            key={i}
-            className="p-2 bg-white shadow-md rounded hover:scale-105 transition"
-          >
-            <img
-              loading="lazy"
-              onClick={() => window.open(d.URL, "_blank")}
-              src={d.download}
-              className="rounded-xl w-full h-48 object-cover cursor-pointer"
-              alt={d.name}
-            />
+const Content = ({ images, favorites, toggleFavorite, openModal }) => {
+  const isFav = (id) => favorites.some((f) => f.id === id);
 
-            <h5 className="text-center font-semibold mt-2 text-sm">
-              {d.name}
-            </h5>
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-5">
+      {images.map((img) => (
+        <div
+          key={img.id}
+          className="shadow rounded p-2 bg-white relative hover:scale-105 transition"
+        >
+          {/* ❤️ Favorite button */}
+          <button
+            onClick={() => toggleFavorite(img)}
+            className="absolute top-2 right-2 text-xl"
+          >
+            {isFav(img.id) ? "❤️" : "🤍"}
+          </button>
+
+          {/* IMAGE */}
+          <img
+            src={img.download_url}
+            loading="lazy"
+            className="w-full h-48 object-cover rounded cursor-pointer"
+            onClick={() => openModal(img)}
+          />
+
+          {/* INFO */}
+          <div className="mt-2 text-center text-sm">
+            <p className="font-bold">{img.author}</p>
+            <p className="text-gray-500 text-xs">
+              {img.width} × {img.height}
+            </p>
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   );
 };

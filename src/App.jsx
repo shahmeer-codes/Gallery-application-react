@@ -1,12 +1,14 @@
 import Navbar from "./Navbar";
 import Content from "./Content";
 import ImageModal from "./ImageModal";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 
 const App = () => {
   const [images, setImages] = useState([]);
   const [pg, setPg] = useState(1);
-  const [limit] = useState(20);
+
+  // ✅ NEW: dynamic limit control
+  const [limit, setLimit] = useState(20);
 
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -18,7 +20,7 @@ const App = () => {
   const [selectedImg, setSelectedImg] = useState(null);
   const [filterAuthor, setFilterAuthor] = useState("");
 
- 
+  // 🔍 debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
@@ -27,8 +29,8 @@ const App = () => {
     return () => clearTimeout(timer);
   }, [search]);
 
-  
-  const fetchImages = useCallback(async () => {
+  // 📦 fetch images
+  const fetchImages = async () => {
     try {
       const res = await fetch(
         `https://picsum.photos/v2/list?page=${pg}&limit=${limit}`
@@ -46,37 +48,35 @@ const App = () => {
       }));
 
       setImages(formatted);
-    } catch (error) {
-      console.error("Error fetching images:", error);
+    } catch (err) {
+      console.error("Error fetching images:", err);
     }
-  }, [pg, limit]);
+  };
 
- 
   useEffect(() => {
     fetchImages();
-  }, [fetchImages]);
+  }, [pg, limit]); // ✅ important: refetch when limit changes
 
+  // 💾 save favorites
   useEffect(() => {
     localStorage.setItem("favorites", JSON.stringify(favorites));
   }, [favorites]);
 
-
+  // ❤️ toggle favorite
   const toggleFavorite = (img) => {
-    setFavorites((prev) => {
-      const exists = prev.find((f) => f.id === img.id);
+    const exists = favorites.find((f) => f.id === img.id);
 
-      if (exists) {
-        return prev.filter((f) => f.id !== img.id);
-      } else {
-        return [...prev, img];
-      }
-    });
+    if (exists) {
+      setFavorites(favorites.filter((f) => f.id !== img.id));
+    } else {
+      setFavorites([...favorites, img]);
+    }
   };
 
+  // 🔍 filtering
   const filteredImages = images.filter((img) => {
-    const matchSearch = img.author
-      .toLowerCase()
-      .includes(debouncedSearch.toLowerCase());
+    const matchSearch =
+      img.author.toLowerCase().includes(debouncedSearch.toLowerCase());
 
     const matchAuthor =
       filterAuthor === "" ||
@@ -89,22 +89,39 @@ const App = () => {
     <>
       <Navbar />
 
+      {/* 🔥 CONTROLS SECTION */}
       <div className="flex flex-wrap justify-center gap-3 m-4">
+
+        {/* search */}
         <input
-          className="border p-2 rounded w-64"
+          className="border p-2 rounded w-60"
           placeholder="Search author..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
 
+        {/* filter author */}
         <input
-          className="border p-2 rounded w-64"
+          className="border p-2 rounded w-60"
           placeholder="Filter by exact author"
           value={filterAuthor}
           onChange={(e) => setFilterAuthor(e.target.value)}
         />
+
+        {/* ✅ NEW: limit selector */}
+        <select
+          className="border p-2 rounded w-40"
+          value={limit}
+          onChange={(e) => setLimit(Number(e.target.value))}
+        >
+          <option value={10}>10 images</option>
+          <option value={20}>20 images</option>
+          <option value={30}>30 images</option>
+          <option value={50}>50 images</option>
+        </select>
       </div>
 
+      {/* GRID */}
       <Content
         images={filteredImages}
         favorites={favorites}
@@ -112,6 +129,7 @@ const App = () => {
         openModal={setSelectedImg}
       />
 
+      {/* PAGINATION */}
       <div className="flex justify-center gap-3 m-5">
         <button
           onClick={() => setPg((p) => Math.max(1, p - 1))}
@@ -130,6 +148,7 @@ const App = () => {
         </button>
       </div>
 
+      {/* MODAL */}
       {selectedImg && (
         <ImageModal img={selectedImg} onClose={() => setSelectedImg(null)} />
       )}
