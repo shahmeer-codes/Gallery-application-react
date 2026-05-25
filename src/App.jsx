@@ -1,106 +1,138 @@
 import Navbar from "./Navbar";
 import Content from "./Content";
-import { useEffect, useState } from "react";
+import ImageModal from "./ImageModal";
+import { useEffect, useState, useCallback } from "react";
 
 const App = () => {
-  const [num, setNum] = useState(20);
-  const [arr, setArr] = useState([]);
+  const [images, setImages] = useState([]);
   const [pg, setPg] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [limit] = useState(20);
 
-  const fetchImages = async (page, limit) => {
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  const [favorites, setFavorites] = useState(() => {
+    return JSON.parse(localStorage.getItem("favorites")) || [];
+  });
+
+  const [selectedImg, setSelectedImg] = useState(null);
+  const [filterAuthor, setFilterAuthor] = useState("");
+
+ 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  
+  const fetchImages = useCallback(async () => {
     try {
-      setLoading(true);
-
-      const response = await fetch(
-        `https://picsum.photos/v2/list?page=${page}&limit=${limit}`
+      const res = await fetch(
+        `https://picsum.photos/v2/list?page=${pg}&limit=${limit}`
       );
 
-      const data = await response.json();
+      const data = await res.json();
 
-      const newArr = data.map((d) => ({
-        name: d.author,
-        download: d.download_url,
-        URL: d.url,
+      const formatted = data.map((d) => ({
+        id: d.id,
+        author: d.author,
+        width: d.width,
+        height: d.height,
+        url: d.url,
+        download_url: d.download_url,
       }));
 
-      setArr(newArr);
-    } catch (err) {
-      console.error("Error fetching images:", err);
-    } finally {
-      setLoading(false);
+      setImages(formatted);
+    } catch (error) {
+      console.error("Error fetching images:", error);
     }
-  };
+  }, [pg, limit]);
+
+ 
+  useEffect(() => {
+    fetchImages();
+  }, [fetchImages]);
 
   useEffect(() => {
-    fetchImages(pg, num);
-  }, [pg]);
+    localStorage.setItem("favorites", JSON.stringify(favorites));
+  }, [favorites]);
 
-  const handleSearch = () => {
-    fetchImages(pg, num);
+
+  const toggleFavorite = (img) => {
+    setFavorites((prev) => {
+      const exists = prev.find((f) => f.id === img.id);
+
+      if (exists) {
+        return prev.filter((f) => f.id !== img.id);
+      } else {
+        return [...prev, img];
+      }
+    });
   };
 
-  const nextPage = () => {
-    if (pg < 100) setPg((prev) => prev + 1);
-  };
+  const filteredImages = images.filter((img) => {
+    const matchSearch = img.author
+      .toLowerCase()
+      .includes(debouncedSearch.toLowerCase());
 
-  const prevPage = () => {
-    if (pg > 1) setPg((prev) => prev - 1);
-  };
+    const matchAuthor =
+      filterAuthor === "" ||
+      img.author.toLowerCase() === filterAuthor.toLowerCase();
+
+    return matchSearch && matchAuthor;
+  });
 
   return (
     <>
       <Navbar />
 
-      {/* Search Section */}
-      <div className="flex justify-center m-5 gap-2">
+      <div className="flex flex-wrap justify-center gap-3 m-4">
         <input
-          value={num}
-          onChange={(e) => setNum(e.target.value)}
-          className="h-10 w-[300px] p-3 border-2 border-black rounded"
-          type="number"
-          placeholder="Number of images"
+          className="border p-2 rounded w-64"
+          placeholder="Search author..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
         />
 
+        <input
+          className="border p-2 rounded w-64"
+          placeholder="Filter by exact author"
+          value={filterAuthor}
+          onChange={(e) => setFilterAuthor(e.target.value)}
+        />
+      </div>
+
+      <Content
+        images={filteredImages}
+        favorites={favorites}
+        toggleFavorite={toggleFavorite}
+        openModal={setSelectedImg}
+      />
+
+      <div className="flex justify-center gap-3 m-5">
         <button
-          onClick={handleSearch}
-          className="bg-green-600 text-white px-4 rounded font-bold"
+          onClick={() => setPg((p) => Math.max(1, p - 1))}
+          className="bg-black text-white px-4 py-2 rounded"
         >
-          Get
+          Prev
+        </button>
+
+        <h1 className="font-bold">Page {pg}</h1>
+
+        <button
+          onClick={() => setPg((p) => p + 1)}
+          className="bg-black text-white px-4 py-2 rounded"
+        >
+          Next
         </button>
       </div>
 
-      {/* Loading */}
-      {loading && (
-        <div className="text-center font-bold text-lg">
-          Loading images...
-        </div>
+      {selectedImg && (
+        <ImageModal img={selectedImg} onClose={() => setSelectedImg(null)} />
       )}
-
-      <Content arr={arr} />
-
-      {/* Pagination */}
-      <div className="flex justify-center items-center mb-5">
-        <div className="flex items-center gap-3 bg-amber-400 p-3 rounded shadow-lg">
-          <button
-            onClick={prevPage}
-            disabled={pg === 1}
-            className="bg-black text-white px-4 py-2 rounded disabled:opacity-50"
-          >
-            Prev
-          </button>
-
-          <h1 className="font-bold">Page: {pg}</h1>
-
-          <button
-            onClick={nextPage}
-            disabled={pg === 100}
-            className="bg-black text-white px-4 py-2 rounded disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
-      </div>
     </>
   );
 };
