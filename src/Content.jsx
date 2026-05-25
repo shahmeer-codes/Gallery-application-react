@@ -1,26 +1,30 @@
+import React from "react";
+
 const Content = ({ arr }) => {
   return (
-    <div className="m-10 rounded text-black">
-      <div className="grid grid-cols-4 m-5 gap-5">
-        {arr.map((d, i) => {
-          return (
-            <div key={i} className="h-fit w-fit p-2">
-              <img
-                onClick={() => {
-                  window.open(`${d.URL}`, "blank");
-                }}
-                src={d.download}
-                className="rounded-2xl object-cover"
-              ></img>
-              <h5 className="flex justify-center items-center font-bold">
-                {d.name}
-              </h5>
-            </div>
-          );
-        })}
+    <div className="m-5">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {arr.map((d, i) => (
+          <div
+            key={i}
+            className="p-2 bg-white shadow-md rounded hover:scale-105 transition"
+          >
+            <img
+              loading="lazy"
+              onClick={() => window.open(d.URL, "_blank")}
+              src={d.download}
+              className="rounded-xl w-full h-48 object-cover cursor-pointer"
+              alt={d.name}
+            />
+
+            <h5 className="text-center font-semibold mt-2 text-sm">
+              {d.name}
+            </h5>
+          </div>
+        ))}
       </div>
     </div>
   );
 };
 
-export default Content;
+export default React.memo(Content);
