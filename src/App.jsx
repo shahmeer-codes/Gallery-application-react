@@ -6,21 +6,24 @@ import { useEffect, useState } from "react";
 const App = () => {
   const [images, setImages] = useState([]);
   const [pg, setPg] = useState(1);
-
-  // ✅ NEW: dynamic limit control
   const [limit, setLimit] = useState(20);
 
+  // 🔍 search (debounced)
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
+  // 🎯 author filter (NEW DROPDOWN)
+  const [selectedAuthor, setSelectedAuthor] = useState("all");
+
+  // ❤️ favorites
   const [favorites, setFavorites] = useState(() => {
     return JSON.parse(localStorage.getItem("favorites")) || [];
   });
 
+  // 🖼 modal
   const [selectedImg, setSelectedImg] = useState(null);
-  const [filterAuthor, setFilterAuthor] = useState("");
 
-  // 🔍 debounce search
+  // 🔥 debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
@@ -31,33 +34,29 @@ const App = () => {
 
   // 📦 fetch images
   const fetchImages = async () => {
-    try {
-      const res = await fetch(
-        `https://picsum.photos/v2/list?page=${pg}&limit=${limit}`
-      );
+    const res = await fetch(
+      `https://picsum.photos/v2/list?page=${pg}&limit=${limit}`
+    );
 
-      const data = await res.json();
+    const data = await res.json();
 
-      const formatted = data.map((d) => ({
-        id: d.id,
-        author: d.author,
-        width: d.width,
-        height: d.height,
-        url: d.url,
-        download_url: d.download_url,
-      }));
+    const formatted = data.map((d) => ({
+      id: d.id,
+      author: d.author,
+      width: d.width,
+      height: d.height,
+      url: d.url,
+      download_url: d.download_url,
+    }));
 
-      setImages(formatted);
-    } catch (err) {
-      console.error("Error fetching images:", err);
-    }
+    setImages(formatted);
   };
 
   useEffect(() => {
     fetchImages();
-  }, [pg, limit]); // ✅ important: refetch when limit changes
+  }, [pg, limit]);
 
-  // 💾 save favorites
+  // 💾 favorites save
   useEffect(() => {
     localStorage.setItem("favorites", JSON.stringify(favorites));
   }, [favorites]);
@@ -73,14 +72,17 @@ const App = () => {
     }
   };
 
-  // 🔍 filtering
+  // 🎯 get unique authors for dropdown
+  const authors = ["all", ...new Set(images.map((img) => img.author))];
+
+  // 🔍 FILTER LOGIC (search + dropdown)
   const filteredImages = images.filter((img) => {
-    const matchSearch =
-      img.author.toLowerCase().includes(debouncedSearch.toLowerCase());
+    const matchSearch = img.author
+      .toLowerCase()
+      .includes(debouncedSearch.toLowerCase());
 
     const matchAuthor =
-      filterAuthor === "" ||
-      img.author.toLowerCase() === filterAuthor.toLowerCase();
+      selectedAuthor === "all" || img.author === selectedAuthor;
 
     return matchSearch && matchAuthor;
   });
@@ -89,10 +91,10 @@ const App = () => {
     <>
       <Navbar />
 
-      {/* 🔥 CONTROLS SECTION */}
+      {/* CONTROLS */}
       <div className="flex flex-wrap justify-center gap-3 m-4">
 
-        {/* search */}
+        {/* 🔍 SEARCH */}
         <input
           className="border p-2 rounded w-60"
           placeholder="Search author..."
@@ -100,15 +102,20 @@ const App = () => {
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        {/* filter author */}
-        <input
+        {/* 🎯 AUTHOR DROPDOWN */}
+        <select
           className="border p-2 rounded w-60"
-          placeholder="Filter by exact author"
-          value={filterAuthor}
-          onChange={(e) => setFilterAuthor(e.target.value)}
-        />
+          value={selectedAuthor}
+          onChange={(e) => setSelectedAuthor(e.target.value)}
+        >
+          {authors.map((author, i) => (
+            <option key={i} value={author}>
+              {author === "all" ? "All Authors" : author}
+            </option>
+          ))}
+        </select>
 
-        {/* ✅ NEW: limit selector */}
+        {/* 📦 LIMIT SELECT */}
         <select
           className="border p-2 rounded w-40"
           value={limit}
